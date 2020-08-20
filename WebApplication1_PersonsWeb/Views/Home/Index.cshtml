@@ -1,0 +1,172 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+    <script>
+        function EditPersons(obj) {
+            var row = $(obj).closest('tr');
+
+            // Enabling edit for the clicked row
+            //$(row).removeClass("event-none");
+            $(row).find("td #txtGetName").removeClass("event-none");
+            $(row).find("td #txtGetDoB").removeClass("event-none");
+            $(row).find("td #txtGetEmail").removeClass("event-none");
+
+            // Find the dvUpdate and show it
+            $(row).find("#dvUpdate").removeClass("display-none");
+
+            //Hide Edit button
+            $(row).find("#btnEdit").addClass("display-none");
+            //$(row).find("#btnEdit").hide();
+
+        }
+
+        function CancelUpdate(obj) {
+            var row = $(obj).closest('tr');
+
+            //$(row).addClass("event-none");
+            $(row).find("td #txtGetName").addClass("event-none");
+            $(row).find("td #txtGetDoB").addClass("event-none");
+            $(row).find("td #txtGetEmail").addClass("event-none");
+
+            // Find the dvUpdate and hide it
+            $(row).find("#dvUpdate").addClass("display-none");
+
+            //Show Edit button
+            $(row).find("#btnEdit").removeClass("display-none");
+            //$(row).find("#btnEdit").show();
+        }
+
+        function UpdatePersons(obj) {
+
+            console.log(obj);
+            var row = $(obj).closest("tr"); 
+
+            var getId = $(row).children("#getId").html();
+            console.log(getId);
+            var getName = $(row).find("td #txtGetName").val();
+            console.log(getName);
+            var getDoB = $(row).find("td #txtGetDoB").val();
+            console.log(getDoB);
+            var getEmail = $(row).find("td #txtGetEmail").val();
+            console.log(getEmail);
+
+            $.ajax({
+                type: "POST",
+                url: "/Persons/UpdatePerson",
+                data: {
+                    Id: getId,
+                    Name: getName,
+                    DoB: getDoB,
+                    Email: getEmail
+                },
+                success: function (response) {
+                    console.log(response);
+                    GetPersons();
+                },
+                error: function (response) {
+                    alert("server not ready please try afterwards");
+                }
+            });
+
+        }
+
+    function AddPersons() {
+        $.ajax({
+            type: "POST",
+            url: "/Persons/AddPerson",
+            data: {
+                Name: txtName.value,
+                DoB: txtDoB.value,
+                Email:txtEmail.value
+            },
+                success: function (response) {
+                    console.log(response);
+                    GetPersons();
+                },
+                error: function (response) {
+                    alert("server not ready please try afterwards");
+                }
+            });
+        }
+
+        function DeletePersons(obj) {
+            //alert('In DeletePersons');
+            console.log(obj);
+
+            var row = $(obj).closest("tr"); 
+            console.log(row);
+           // var getId = $(row).find("#getId").html();
+            var getId = $(row).children("#getId").html();
+            console.log(getId);
+
+            jQuery.ajax({
+                type: "GET",
+                url: "/Persons/DeletePerson",
+                data: { id: getId },
+                success: function (response) {
+                    console.log(response);
+                    GetPersons();
+                },
+                error: function (response) {
+                    alert("server not ready please try afterwards");
+                }
+            });
+        }
+
+    function GetPersons() {
+        $.ajax({
+            type: "GET",
+            url: "/Persons/GetPersons",
+            data: {},
+            //dataType: "html",
+            success: function (response) {
+                console.log(response);
+
+                $("#records_table > tr").remove();
+
+                var trHTML = '';
+                trHTML = '<tr><th>Id</th><th>Name</th><th>DoB</th><th>Email</th><th>Add/Update/Delete</th></tr>';
+                $('#records_table').append(trHTML);
+                trHTML = '';
+                $.each(response, function (i, item) {
+                    trHTML += '<tr><td id="getId">' + item.id + '</td><td id="getName"><input type="text" id="txtGetName" class="event-none" value="' + item.name + '"></td><td id="getDoB"><input type="text" id="txtGetDoB" class="event-none" value="' + item.doB + '"></td><td id="getEmail"><input type="text" class="event-none" id="txtGetEmail" value="' + item.email + '"></td><td id="buttons">'
+                        + '<button type="button" name="EditPersons" id="btnEdit" onclick="EditPersons(this)">Edit</button> <button type="button" name="DeletePersons" onclick="DeletePersons(this)">Delete</button> <div id="dvUpdate" class="display-none"><button type="button" name="UpdatePersons" id="" onclick="UpdatePersons(this)">Update</button><button type="button" name="CancelUpdate" id="" onclick="CancelUpdate(this)">Cancel</button></div>' + '</td></tr>';
+                });
+                $('#records_table').append(trHTML);
+
+                trHTML = '<tr><td></td><td><input type="text" id="txtName" name="PersonName"></td><td><input type="text" id="txtDoB" name="PersonDoB"></td><td><input type="text" id="txtEmail" name="PersonEmail"></td><td><button type="button" name="AddPersons" id="Add" onclick="AddPersons()">Add</button ></td>';
+                $('#records_table').append(trHTML);
+            },
+            error: function (response) {
+                alert("server not ready please try afterwards");
+            }
+        });
+        }
+     </script>
+
+@*<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>*@
+
+<div>
+    <button type="button" name="GetPersons" id="GetPersons" onclick="GetPersons()">
+        Get Persons
+    </button>
+    <br/><br/>
+    <div id="getPersonsResponse">
+        <table id="records_table">
+        </table>
+    </div>
+    @*<div>
+        <div>
+            <input type="text" id="txtName" name="PersonName">
+            <input type="text" id="txtDoB" name="PersonDoB">
+            <input type="text" id="txtEmail" name="PersonEmail">
+        </div>
+        <button type="button" name="AddPersons" id="Add" onclick="AddPersons()">
+            Add
+        </button>
+    </div>*@
+</div>
